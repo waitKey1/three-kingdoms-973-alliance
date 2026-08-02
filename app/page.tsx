@@ -11,6 +11,10 @@ export default async function Home() {
   const meritGrowth = ((lanting.targetMerit / lanting.currentMerit - 1) * 100).toFixed(1);
   const currentStrength = migrationData.records.filter((record) => record.当前盟 === "兰亭").reduce((sum, record) => sum + record.实力, 0) / 100;
   const strengthGrowth = ((lanting.averageStrength / currentStrength - 1) * 100).toFixed(1);
+  const currentSixRecords = migrationData.records.filter((record) => record.当前盟 === "兰亭" && record.六维和 !== null);
+  const currentSixAverage = currentSixRecords.reduce((sum, record) => sum + (record.六维和 ?? 0), 0) / currentSixRecords.length;
+  const targetSixAverage = lanting.averageSix ?? 0;
+  const sixGrowth = targetSixAverage > 0 && currentSixAverage > 0 ? ((targetSixAverage / currentSixAverage - 1) * 100).toFixed(1) : null;
 
   return (
     <main>
@@ -57,15 +61,15 @@ export default async function Home() {
           <div className="battle-gains">
             <div><span>总功勋</span><b>+{meritGrowth}%</b><small>{formatCompact(lanting.targetMerit)}</small></div>
             <div><span>平均实力</span><b>+{strengthGrowth}%</b><small>{formatCompact(lanting.averageStrength)}</small></div>
-            <div><span>平均六维</span><b>4,568</b><small>+8.9%</small></div>
+            <div><span>平均六维</span><b>{targetSixAverage > 0 ? targetSixAverage.toLocaleString("zh-CN") : "—"}</b><small>{sixGrowth === null ? "暂无完整数据" : `${Number(sixGrowth) >= 0 ? "+" : ""}${sixGrowth}%`}</small></div>
           </div>
         </div>
         <div className="orders-card">
           <div className="section-heading"><div><span className="eyebrow">EXECUTION ORDER</span><h2>迁盟军令</h2></div><Link href="/migration">完整清单 →</Link></div>
           <ol>
-            <li><b>壹</b><span><strong>确认候补</strong><small>核实3个低活跃账号，未确认前不直接清退。</small></span></li>
-            <li><b>贰</b><span><strong>先腾位置</strong><small>兰亭迁出25人，与三盟反向迁移同步执行。</small></span></li>
-            <li><b>叁</b><span><strong>补强主盟</strong><small>22人按战斗排名进入兰亭，任何时点不超过100人。</small></span></li>
+            <li><b>壹</b><span><strong>确认候补</strong><small>核实{migrationData.stats.reserves}个低活跃账号，未确认前不直接清退。</small></span></li>
+            <li><b>贰</b><span><strong>先腾位置</strong><small>兰亭迁出{lanting.outgoing}人，与三盟反向迁移同步执行。</small></span></li>
+            <li><b>叁</b><span><strong>补强主盟</strong><small>{lanting.incoming}人按战斗排名进入兰亭，任何时点不超过100人。</small></span></li>
             <li><b>肆</b><span><strong>最终复核</strong><small>核对同名、改名及四盟97人闭环。</small></span></li>
           </ol>
         </div>

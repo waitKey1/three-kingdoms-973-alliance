@@ -11,14 +11,20 @@ export function MigrationBoard({ records }: { records: Member[] }) {
     const statusMatch = filter === "全部" || (filter === "候补" ? member.建议盟 === "候补" : member.建议盟 !== member.当前盟 && member.建议盟 !== "候补");
     return statusMatch && (!search.trim() || member.成员名称.toLowerCase().includes(search.trim().toLowerCase()));
   }), [filter, records, search]);
+  const flows = useMemo(() => ({
+    huachenToLanting: records.filter((member) => member.当前盟 === "花晨" && member.建议盟 === "兰亭").length,
+    linglongToLanting: records.filter((member) => member.当前盟 === "玲珑" && member.建议盟 === "兰亭").length,
+    yanyunToLanting: records.filter((member) => member.当前盟 === "燕云" && member.建议盟 === "兰亭").length,
+    lantingOutgoing: records.filter((member) => member.当前盟 === "兰亭" && member.建议盟 !== "兰亭" && member.建议盟 !== "候补").length,
+  }), [records]);
 
   return (
     <>
       <div className="migration-flows">
-        <div><span>花晨</span><b>6</b><i>→ 兰亭</i></div>
-        <div><span>玲珑</span><b>11</b><i>→ 兰亭</i></div>
-        <div><span>燕云</span><b>5</b><i>→ 兰亭</i></div>
-        <div className="flow-out"><span>兰亭迁出</span><b>25</b><i>平衡三盟</i></div>
+        <div><span>花晨</span><b>{flows.huachenToLanting}</b><i>→ 兰亭</i></div>
+        <div><span>玲珑</span><b>{flows.linglongToLanting}</b><i>→ 兰亭</i></div>
+        <div><span>燕云</span><b>{flows.yanyunToLanting}</b><i>→ 兰亭</i></div>
+        <div className="flow-out"><span>兰亭迁出</span><b>{flows.lantingOutgoing}</b><i>平衡三盟</i></div>
       </div>
 
       <section className="table-panel">

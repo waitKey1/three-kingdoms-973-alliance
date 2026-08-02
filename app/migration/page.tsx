@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MigrationPage() {
   const migrationData = await getPublicMigrationData();
+  const lanting = migrationData.alliances.find((alliance) => alliance.alliance === "兰亭");
   return (
     <main className="inner-page migration-page">
       <header className="inner-header migration-header">
@@ -18,15 +19,15 @@ export default async function MigrationPage() {
       <section className="migration-kpis">
         <div><span>当前总人数</span><b>{migrationData.stats.total}</b><small>四盟合计</small></div>
         <div><span>正式编成</span><b>{migrationData.stats.assigned}</b><small>97 × 4</small></div>
-        <div><span>需要迁盟</span><b>{migrationData.stats.moves}</b><small>47条执行项</small></div>
+        <div><span>需要迁盟</span><b>{migrationData.stats.moves}</b><small>{migrationData.stats.moves}条执行项</small></div>
         <div><span>候补待确认</span><b>{migrationData.stats.reserves}</b><small>优先核实活跃度</small></div>
       </section>
 
       <section className="execution-notice">
         <span>执行原则</span>
-        <p><b>01</b>先确认候补3人</p><i />
-        <p><b>02</b>兰亭先迁出25人</p><i />
-        <p><b>03</b>22名战斗成员入兰亭</p><i />
+        <p><b>01</b>先确认候补{migrationData.stats.reserves}人</p><i />
+        <p><b>02</b>兰亭先迁出{lanting?.outgoing ?? 0}人</p><i />
+        <p><b>03</b>{lanting?.incoming ?? 0}名成员入兰亭</p><i />
         <p><b>04</b>复核四盟各97人</p>
       </section>
       <MigrationBoard records={migrationData.records} />
