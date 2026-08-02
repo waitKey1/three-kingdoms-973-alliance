@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { MigrationBoard } from "../components/MigrationBoard";
-import { migrationData } from "../lib/data";
+import { getPublicMigrationData } from "../lib/server/public-data";
 
 export const metadata: Metadata = { title: "迁盟管理" };
 
-export default function MigrationPage() {
+export const dynamic = "force-dynamic";
+
+export default async function MigrationPage() {
+  const migrationData = await getPublicMigrationData();
   return (
     <main className="inner-page migration-page">
       <header className="inner-header migration-header">
         <div><span className="eyebrow">MIGRATION COMMAND</span><h1>迁盟管理<em>四盟97人编成</em></h1><p>先释放位置，再补强兰亭；全程保持每盟不超过100人。</p></div>
-        <a className="download-button" href="/downloads/973新版迁盟分配表.xlsx">下载完整迁盟表 ↓</a>
+        <a className="download-button" href="/api/public/export">下载实时迁盟表 ↓</a>
       </header>
 
       <section className="migration-kpis">

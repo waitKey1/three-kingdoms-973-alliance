@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { ThreeHero } from "./components/ThreeHero";
-import { formatCompact, getAllianceSlug, migrationData } from "./lib/data";
+import { formatCompact, getAllianceSlug } from "./lib/data";
+import { getPublicMigrationData } from "./lib/server/public-data";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const migrationData = await getPublicMigrationData();
   const lanting = migrationData.alliances[0];
   const meritGrowth = ((lanting.targetMerit / lanting.currentMerit - 1) * 100).toFixed(1);
   const currentStrength = migrationData.records.filter((record) => record.当前盟 === "兰亭").reduce((sum, record) => sum + record.实力, 0) / 100;
@@ -19,7 +23,7 @@ export default function Home() {
           <p>四盟统筹、战力编成与迁盟执行的统一指挥台。<br />以实时名单为底，以战斗评分为尺。</p>
           <div className="hero-actions">
             <Link href="/migration" className="primary-action">查看迁盟方案 <span>→</span></Link>
-            <a href="/downloads/973新版迁盟分配表.xlsx" className="secondary-action">下载完整表格</a>
+            <a href="/api/public/export" className="secondary-action">下载实时表格</a>
           </div>
         </div>
         <div className="hero-signal"><span>01</span><b>一盟作战态势</b><strong>READY</strong></div>

@@ -3,32 +3,36 @@ set -Eeuo pipefail
 
 APP_NAME="three-kingdoms-973-alliance"
 APP_DIR="/home/donxu/apps/${APP_NAME}"
-IMAGE="${APP_NAME}:20260802"
-PUBLIC_PORT="18120"
-STATUS_FILE="/tmp/${APP_NAME}.status"
-
-trap 'echo FAILED > "${STATUS_FILE}"' ERR
+REPO_URL="https://github.com/waitKey1/three-kingdoms-973-alliance.git"
+COMPOSE=(docker compose --env-file .env.production)
 
 if [[ -d "${APP_DIR}/.git" ]]; then
   git -C "${APP_DIR}" pull --ff-only origin main
 else
   mkdir -p "$(dirname "${APP_DIR}")"
-  git clone https://github.com/waitKey1/three-kingdoms-973-alliance.git "${APP_DIR}"
+  git clone "${REPO_URL}" "${APP_DIR}"
+fi
+cd "${APP_DIR}"
+
+if [[ ! -f .env.production ]]; then
+  echo "Missing ${APP_DIR}/.env.production; copy .env.example and fill production secrets first." >&2
+  exit 1
 fi
 
-docker build --pull -t "${IMAGE}" "${APP_DIR}"
-if docker container inspect "${APP_NAME}" >/dev/null 2>&1; then
-  docker rm -f "${APP_NAME}"
-fi
-docker run -d --name "${APP_NAME}" --restart=always -p "${PUBLIC_PORT}:3000" "${IMAGE}"
+"${COMPOSE[@]}" up -d postgres redis
+"${COMPOSE[@]}" build app
+"${COMPOSE[@]}" run --rm app npx prisma migrate deploy
+"${COMPOSE[@]}" run --rm app node prisma/seed.mjs
+"${COMPOSE[@]}" up -d app
 
 for _ in $(seq 1 30); do
-  if curl -fsS "http://127.0.0.1:${PUBLIC_PORT}/" >/dev/null; then
-    echo SUCCESS > "${STATUS_FILE}"
+  if curl -fsS http://127.0.0.1:18121/api/health >/dev/null; then
+    echo "Blue environment is healthy on 127.0.0.1:18121."
+    echo "The legacy 18120 container has not been changed and remains available for rollback."
     exit 0
   fi
   sleep 2
 done
 
-echo "Health check timed out" >&2
+echo "Health check timed out; keep Nginx on the legacy 18120 service." >&2
 exit 1

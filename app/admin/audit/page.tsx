@@ -1,0 +1,7 @@
+import { prisma } from "../../lib/server/prisma";
+import { requireAdmin } from "../../lib/server/session";
+
+export const metadata = { title: "审计日志" };
+export const dynamic = "force-dynamic";
+
+export default async function AuditPage() { const user = await requireAdmin(); const logs = await prisma.auditLog.findMany({ where: user.role === "REGION_ADMIN" ? {} : { allianceId: user.allianceId ?? "" }, include: { actor: { select: { displayName: true, phone: true } }, alliance: { select: { name: true } } }, orderBy: { createdAt: "desc" }, take: 200 }); return <main className="admin-page"><header className="admin-header"><div><span className="eyebrow">AUDIT TRAIL</span><h1>审计日志</h1><p>{user.role === "REGION_ADMIN" ? "全区最近200条后台操作。" : "本盟最近200条后台操作。"}</p></div></header><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>时间</th><th>操作者</th><th>盟范围</th><th>动作</th><th>实体</th><th>IP</th></tr></thead><tbody>{logs.map((log) => <tr key={log.id}><td>{log.createdAt.toLocaleString("zh-CN")}</td><td><b>{log.actor?.displayName ?? "系统"}</b><small>{user.role === "REGION_ADMIN" ? log.actor?.phone : log.actor?.phone ? `${log.actor.phone.slice(0, 3)}****${log.actor.phone.slice(-4)}` : ""}</small></td><td>{log.alliance?.name ?? "全区"}</td><td>{log.action}</td><td>{log.entityType}<small>{log.entityId.slice(0, 8)}</small></td><td>{log.ipAddress ?? "—"}</td></tr>)}</tbody></table></div></main>; }

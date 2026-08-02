@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  REGION_ADMIN
+  ALLIANCE_ADMIN
+  ALLIANCE_MEMBER
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+}
+
+enum AllianceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum MigrationStatus {
+  STAY
+  MOVE
+  RESERVE
+}
+
+model User {
+  id             String          @id @default(uuid())
+  phone          String          @unique
+  displayName    String?
+  role           UserRole        @default(ALLIANCE_MEMBER)
+  status         UserStatus      @default(PENDING)
+  allianceId     String?
+  memberId       String?         @unique
+  lastLoginAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+  alliance       Alliance?       @relation(fields: [allianceId], references: [id])
+  member         AllianceMember? @relation(fields: [memberId], references: [id])
+  claims         MemberClaim[]   @relation("ClaimOwner")
+  reviewedClaims MemberClaim[]   @relation("ClaimReviewer")
+  auditLogs      AuditLog[]
+
+  @@index([allianceId, status])
+  @@index([role, status])
+}
+
+model Alliance {
+  id             String           @id @default(uuid())
+  name           String           @unique
+  slug           String           @unique
+  roleLabel      String
+  color          String
+  capacity       Int              @default(100)
+  targetCapacity Int              @default(97)
+  sortOrder      Int              @default(0)
+  status         AllianceStatus   @default(ACTIVE)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  users          User[]
+  currentMembers AllianceMember[] @relation("CurrentAlliance")
+  targetMembers  AllianceMember[] @relation("TargetAlliance")
+  claims         MemberClaim[]
+  auditLogs      AuditLog[]
+
+  @@index([status, sortOrder])
+}
+
+model AllianceMember {
+  id                 String          @id @default(uuid())
+  externalNo         Int?            @unique
+  name               String
+  currentAllianceId  String
+  targetAllianceId   String?
+  migrationStatus    MigrationStatus @default(STAY)
+  migrationAction    String
+  previousSuggestion String?
+  originalPreference String?
+  maxRallyBonus      Float?
+  nationalRallyBonus Float?
+  infantryDefense    Int?
+  infantryHealth     Int?
+  cavalryAttack      Int?
+  cavalryDestruction Int?
+  archerAttack       Int?
+  archerDestruction  Int?
+  sixDimensionTotal  Int?
+  totalMerit         BigInt          @default(0)
+  strength           BigInt          @default(0)
+  power              BigInt          @default(0)
+  weeklyMerit        BigInt          @default(0)
+  weeklyDonation     BigInt          @default(0)
+  furnaceLevel       String?
+  rankLevel          Int?
+  battleScore        Float           @default(0)
+  battleRank         Int             @default(0)
+  allocationReason   String?
+  matchNote          String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  deletedAt          DateTime?
+  currentAlliance    Alliance        @relation("CurrentAlliance", fields: [currentAllianceId], references: [id])
+  targetAlliance     Alliance?       @relation("TargetAlliance", fields: [targetAllianceId], references: [id])
+  boundUser          User?
+  claims             MemberClaim[]
+
+  @@index([name])
+  @@index([currentAllianceId, deletedAt])
+  @@index([targetAllianceId, migrationStatus, deletedAt])
+  @@index([battleRank])
+}
+
+model MemberClaim {
+  id              String         @id @default(uuid())
+  userId          String
+  allianceId      String
+  memberId        String
+  status          ClaimStatus    @default(PENDING)
+  reviewerId      String?
+  rejectionReason String?
+  reviewedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  user            User           @relation("ClaimOwner", fields: [userId], references: [id])
+  alliance        Alliance       @relation(fields: [allianceId], references: [id])
+  member          AllianceMember @relation(fields: [memberId], references: [id])
+  reviewer        User?          @relation("ClaimReviewer", fields: [reviewerId], references: [id])
+
+  @@index([allianceId, status, createdAt])
+  @@index([userId, status])
+  @@index([memberId, status])
+}
+
+model AuditLog {
+  id         String    @id @default(uuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  allianceId String?
+  beforeData Json?
+  afterData  Json?
+  ipAddress  String?
+  createdAt  DateTime  @default(now())
+  actor      User?     @relation(fields: [actorId], references: [id])
+  alliance   Alliance? @relation(fields: [allianceId], references: [id])
+
+  @@index([allianceId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([entityType, entityId])
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

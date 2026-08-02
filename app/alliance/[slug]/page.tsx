@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MemberTable } from "../../components/MemberTable";
-import { ALLIANCE_SLUGS, allianceEntries, formatCompact, migrationData, type AllianceSlug } from "../../lib/data";
+import { ALLIANCE_SLUGS, allianceEntries, formatCompact, type AllianceSlug } from "../../lib/data";
+import { getPublicMigrationData } from "../../lib/server/public-data";
 
 export function generateStaticParams() {
   return allianceEntries.map(([slug]) => ({ slug }));
@@ -15,6 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function AlliancePage({ params }: { params: Promise<{ slug: string }> }) {
+  const migrationData = await getPublicMigrationData();
   const { slug } = await params;
   const alliance = ALLIANCE_SLUGS[slug as AllianceSlug];
   if (!alliance) notFound();
@@ -26,7 +28,7 @@ export default async function AlliancePage({ params }: { params: Promise<{ slug:
     <main className="inner-page" style={{ "--accent": summary.color } as React.CSSProperties}>
       <header className="inner-header">
         <div><span className="eyebrow">ALLIANCE 0{summary.order}</span><h1>{alliance}<em>{summary.role}</em></h1><p>目标编成97人 · 当前{summary.currentCount}人 · 迁入{summary.incoming}人 · 迁出{summary.outgoing}人</p></div>
-        <div className="header-actions"><Link href="/migration">查看迁盟路径</Link><a href="/downloads/973新版迁盟分配表.xlsx">下载表格</a></div>
+        <div className="header-actions"><Link href="/migration">查看迁盟路径</Link><a href="/api/public/export">下载实时表格</a></div>
       </header>
 
       <section className="metric-strip">
