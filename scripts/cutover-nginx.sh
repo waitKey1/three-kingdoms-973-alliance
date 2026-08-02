@@ -11,7 +11,7 @@ if [[ ! -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" ]]; then
   sudo ln -sfn "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN}"
   sudo nginx -t
   sudo systemctl reload nginx
-  sudo certbot --nginx -d "${DOMAIN}"
+  sudo certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email -d "${DOMAIN}"
 fi
 
 sudo cp "${APP_DIR}/deploy/nginx/973.sligenai.cn.conf" "/etc/nginx/sites-available/${DOMAIN}"
