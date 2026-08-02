@@ -5,3 +5,6 @@ dist
 node_modules
 .codex-dev.log
 npm-debug.log*
+.env*
+!.env.example
+bootstrap-token.txt
