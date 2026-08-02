@@ -1,5 +1,6 @@
 FROM node:22-bookworm-slim AS dependencies
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -12,6 +13,7 @@ RUN npx prisma generate && npm run build
 
 FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=build /app/package.json /app/package-lock.json ./
