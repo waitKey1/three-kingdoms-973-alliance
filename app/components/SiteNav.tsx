@@ -25,8 +25,8 @@ export function SiteNav({ viewer }: { viewer: Viewer }) {
   return (
     <aside className={`site-nav ${isAdmin ? "admin-nav" : ""}`}>
       <Link href={isAdmin ? "/admin" : "/"} className="brand" aria-label="返回973区管理首页">
-        <span className="brand-seal">973</span>
-        <span><b>{isAdmin ? "管理中枢" : "冰河盟库"}</b><small>THREE KINGDOMS · 973</small></span>
+        <span className="brand-seal" aria-hidden="true" />
+        <span><b>{isAdmin ? "管理中枢" : "冰封三国"}</b><small>THREE KINGDOMS · 973</small></span>
       </Link>
       <nav aria-label="主导航">
         <p className="nav-kicker">{isAdmin ? "管理后台" : "指挥中枢"}</p>

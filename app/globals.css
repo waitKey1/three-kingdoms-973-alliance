@@ -25,8 +25,7 @@ input, select, textarea { color-scheme: dark; }
   display: flex; flex-direction: column; background: rgba(7, 11, 15, 0.92); border-right: 1px solid var(--line); backdrop-filter: blur(20px);
 }
 .brand { display: flex; align-items: center; gap: 13px; padding: 0 8px 28px; border-bottom: 1px solid var(--line); }
-.brand-seal { width: 45px; height: 45px; display: grid; place-items: center; border: 1px solid rgba(210,165,94,.7); color: var(--gold); font: 700 14px/1 Georgia, serif; transform: rotate(45deg); }
-.brand-seal::first-line { transform: rotate(-45deg); }
+.brand-seal { width: 45px; height: 45px; flex: 0 0 auto; background: url("/icon.svg") center / contain no-repeat; filter: drop-shadow(0 0 12px rgba(118,194,191,.14)); }
 .brand > span:last-child { display: flex; flex-direction: column; gap: 4px; }
 .brand b { font: 700 19px/1.2 "STKaiti", "KaiTi", serif; letter-spacing: .16em; }
 .brand small { color: #5f7478; font-size: 8px; letter-spacing: .14em; }
