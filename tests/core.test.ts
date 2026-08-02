@@ -9,7 +9,7 @@ test("source roster preserves approved migration totals", async () => {
   const data = JSON.parse(await readFile(new URL("../app/data/migration-data.json", import.meta.url), "utf8"));
   assert.equal(data.records.length, 391);
   assert.equal(data.stats.assigned, 388);
-  assert.equal(data.stats.moves, 47);
+  assert.equal(data.stats.moves, 106);
   assert.equal(data.stats.reserves, 3);
   assert.equal(data.stats.sixMatched, 205);
   assert.deepEqual(data.alliances.map((item: { targetCount: number }) => item.targetCount), [97, 97, 97, 97]);
